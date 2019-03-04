@@ -1,13 +1,15 @@
 import torch
 
 from attacks import fgsm_attack
-from model import LeNet
+from models import LeNet
 from torchvision import datasets, transforms
 
 MNIST_PATH = 'data'
 MODEL_PATH = 'resources/lenet_mnist_model.bin'
 
-if __name__ == '__main__':
+def main():
+    r"""FGSM attack tutorial on MNIST dataset.
+    """
     # MNIST Test dataset and dataloader declaration
     test_loader = torch.utils.data.DataLoader(
         datasets.MNIST(MNIST_PATH, train=False, download=True, transform=transforms.Compose([
@@ -29,7 +31,7 @@ if __name__ == '__main__':
     model.eval()
 
     # Accuracy counter
-    n1, n2 = 0, 0
+    n_1, n_2 = 0, 0
 
     # Loop over all examples in test set
     for image, label in test_loader:
@@ -45,7 +47,7 @@ if __name__ == '__main__':
 
         # Check for success
         if init_pred.item() == label.item():
-            n1 += 1
+            n_1 += 1
 
         # Call Attack Method
         perturbed = fgsm_attack(model, image, label)
@@ -55,9 +57,12 @@ if __name__ == '__main__':
         final_pred = final_output.max(1, keepdim=True)[1]
 
         if final_pred.item() == label.item():
-            n2 += 1
+            n_2 += 1
 
     # Calculate final accuracy for this epsilon
-    init_acc = n1 / float(len(test_loader))
-    final_acc = n2 / float(len(test_loader))
+    init_acc = n_1 / float(len(test_loader))
+    final_acc = n_2 / float(len(test_loader))
     print("Accuracy: {} -> {}".format(init_acc, final_acc))
+
+if __name__ == '__main__':
+    main()

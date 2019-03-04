@@ -1,9 +1,12 @@
+r"""The model package contains models used for attacking test.
+"""
+
 import torch.nn as nn
 import torch.nn.functional as F
 
 
-# LeNet Model definition
 class LeNet(nn.Module):
+    """LeNet Model definition"""
     def __init__(self):
         super(LeNet, self).__init__()
         self.conv1 = nn.Conv2d(1, 10, kernel_size=5)

@@ -1,10 +1,14 @@
+r"""
+The attack package contains adversarial attack methods inplements.
+"""
+
 import torch
 import torch.nn.functional as F
 
 
-# FGSM attack code
 def fgsm_attack(model, data, target, epsilon=0.1):
-
+    r"""The Fast Gradient Sign Method attack.
+    """
     # Set requires_grad attribute of tensor. Important for Attack
     data.requires_grad = True
 
@@ -36,8 +40,9 @@ def fgsm_attack(model, data, target, epsilon=0.1):
     return perturbed_image
 
 
-# BIM attack code
 def bim_attack(model, data, target, alpha=0.05, nb_iter=3, epsilon=0.05):
+    r"""The Basic Iterate Method attack, also names as I-FGSM.
+    """
     eta = 0
     for _ in range(nb_iter):
         # Call FGSM Attack
