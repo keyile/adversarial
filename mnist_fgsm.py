@@ -1,6 +1,10 @@
+r"""
+The FGSM attacking tutorial on MNIST dataset.
+"""
+
 import torch
 
-from attacks import fgsm_attack
+from attacks import bim_attack
 from models import LeNet
 from torchvision import datasets, transforms
 
@@ -8,8 +12,6 @@ MNIST_PATH = 'data'
 MODEL_PATH = 'resources/lenet_mnist_model.bin'
 
 def main():
-    r"""FGSM attack tutorial on MNIST dataset.
-    """
     # MNIST Test dataset and dataloader declaration
     test_loader = torch.utils.data.DataLoader(
         datasets.MNIST(MNIST_PATH, train=False, download=True, transform=transforms.Compose([
@@ -50,7 +52,7 @@ def main():
             n_1 += 1
 
         # Call Attack Method
-        perturbed = fgsm_attack(model, image, label)
+        perturbed = bim_attack(model, image, label)
 
         # Repeat
         final_output = model(perturbed)

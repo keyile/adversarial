@@ -25,10 +25,13 @@ def fgsm_attack(model, data, target, epsilon=0.1):
     loss.backward()
 
     # Collect datagrad
-    data_grad = data.grad.data
+    data_grad = data.grad.data.clone().detach()
+
+    # Don't record anymore
+    data.requires_grad = False
 
     # Collect the element-wise sign of the data gradient
-    sign_data_grad = data_grad.sign()
+    sign_data_grad = data_grad.sign_()
 
     # Create the perturbed image by adjusting each pixel of the input image
     perturbed_image = data + epsilon*sign_data_grad
@@ -40,14 +43,15 @@ def fgsm_attack(model, data, target, epsilon=0.1):
     return perturbed_image
 
 
-def bim_attack(model, data, target, alpha=0.05, nb_iter=3, epsilon=0.05):
+def bim_attack(model, data, target, epsilon=0.1, nb_iter=3, alpha=0.1):
     r"""The Basic Iterate Method attack, also names as I-FGSM.
     """
     eta = 0
+    data.requires_grad = False
+
     for _ in range(nb_iter):
         # Call FGSM Attack
-        perturbed_data = fgsm_attack(
-            model, (data+eta).detach(), target, alpha)
+        perturbed_data = fgsm_attack(model, data + eta, target, alpha)
 
         # Clip intermediate results
         eta = perturbed_data - data

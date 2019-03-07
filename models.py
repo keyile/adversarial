@@ -1,4 +1,5 @@
-r"""The model package contains models used for attacking test.
+r"""
+The model package contains models used for attacking test.
 """
 
 import torch.nn as nn
