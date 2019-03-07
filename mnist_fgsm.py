@@ -14,12 +14,14 @@ from torchvision import datasets, transforms
 MNIST_PATH = 'data'
 MODEL_PATH = 'resources/lenet_mnist_model.bin'
 
-def model_train(model, train_loader, device, epochs):
+
+def model_train(model, train_loader, device, epochs, attack):
     model.train()
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
     for epoch in range(epochs):
         for data, target in train_loader:
             data, target = data.to(device), target.to(device)
+            data = attack(model, data, target)  # produce the perturbed data
             optimizer.zero_grad()
             output = model(data)
             loss = F.nll_loss(output, target)
@@ -32,9 +34,10 @@ def model_eval(model, test_loader, device, attack):
     correct = 0
     for data, target in test_loader:
         data, target = data.to(device), target.to(device)
-        data = attack(model, data, target) # produce the perturbed data
+        data = attack(model, data, target)  # produce the perturbed data
         output = model(data)
-        pred = output.argmax(dim=1, keepdim=True) # get the index of the max log-probability
+        # get the index of the max log-probability
+        pred = output.argmax(dim=1, keepdim=True)
         correct += pred.eq(target.view_as(pred)).sum().item()
 
     return 1. * correct / len(test_loader.dataset)
@@ -66,7 +69,7 @@ def main():
     # model.load_state_dict(torch.load(MODEL_PATH, map_location='cpu'))
 
     # Train an MNIST model
-    model_train(model, train_loader, device, 10)
+    model_train(model, train_loader, device, 10, noop_attack)
 
     # Evaluate the accuracy of the MNIST model on legitimate test examples
     accuracy = model_eval(model, test_loader, device, noop_attack)
@@ -76,39 +79,19 @@ def main():
     accuracy = model_eval(model, test_loader, device, fgsm_attack)
     print('Test accuracy on adversarial examples: ' + str(accuracy))
 
-"""     # Accuracy counter
-    n_1, n_2 = 0, 0
+    print("Repeating the process, using adversarial training")
+    # Perform adversarial training
+    model_train(model, train_loader, device, 10, fgsm_attack)
 
-    # Loop over all examples in test set
-    for image, label in test_loader:
+    # Evaluate the accuracy of the adversarialy trained MNIST model on
+    # legitimate test examples
+    accuracy = model_eval(model, test_loader, device, noop_attack)
+    print('Test accuracy on legitimate test examples: ' + str(accuracy))
 
-        # Send the data and label to the device
-        image, label = image.to(device), label.to(device)
-
-        # Classify the input
-        init_output = model(image)
-
-        # Get the index of the max log-probability
-        init_pred = init_output.max(1, keepdim=True)[1]
-
-        # Check for success
-        if init_pred.item() == label.item():
-            n_1 += 1
-
-        # Call Attack Method
-        perturbed = bim_attack(model, image, label)
-
-        # Repeat
-        final_output = model(perturbed)
-        final_pred = final_output.max(1, keepdim=True)[1]
-
-        if final_pred.item() == label.item():
-            n_2 += 1
-
-    # Calculate final accuracy for this epsilon
-    init_acc = n_1 / float(len(test_loader))
-    final_acc = n_2 / float(len(test_loader))
-    print("Accuracy: {} -> {}".format(init_acc, final_acc)) """
+    # Evaluate the accuracy of the adversarially trained MNIST model on
+    # adversarial examples
+    accuracy_adv = model_eval(model, test_loader, device, fgsm_attack)
+    print('Test accuracy on adversarial examples: ' + str(accuracy_adv))
 
 
 if __name__ == '__main__':
