@@ -5,8 +5,10 @@ The attack package contains adversarial attack methods inplements.
 import torch
 import torch.nn.functional as F
 
+def noop_attack(model, data, target):
+    return data
 
-def fgsm_attack(model, data, target, epsilon=0.1):
+def fgsm_attack(model, data, target, epsilon=0.25):
     r"""The Fast Gradient Sign Method attack.
     """
     # Set requires_grad attribute of tensor. Important for Attack
