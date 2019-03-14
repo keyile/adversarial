@@ -11,6 +11,7 @@ def noop_attack(model, data, target):
 def fgsm_attack(model, data, target, epsilon=0.25):
     r"""The Fast Gradient Sign Method attack.
     """
+
     # Set requires_grad attribute of tensor. Important for Attack
     data.requires_grad = True
 
@@ -20,20 +21,17 @@ def fgsm_attack(model, data, target, epsilon=0.25):
     # Calculate the loss
     loss = F.nll_loss(output, target)
 
-    # Zero all existing gradients
-    model.zero_grad()
-
     # Calculate gradients of model in backward pass
     loss.backward()
 
     # Collect datagrad
-    data_grad = data.grad.data.clone().detach()
+    data_grad = data.grad.data
 
-    # Don't record anymore
+    # Stop recording gradients
     data.requires_grad = False
 
     # Collect the element-wise sign of the data gradient
-    sign_data_grad = data_grad.sign_()
+    sign_data_grad = data_grad.sign()
 
     # Create the perturbed image by adjusting each pixel of the input image
     perturbed_image = data + epsilon*sign_data_grad

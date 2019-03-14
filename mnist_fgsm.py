@@ -11,9 +11,6 @@ from attacks import noop_attack
 from models import LeNet
 from torchvision import datasets, transforms
 
-MNIST_PATH = 'data'
-MODEL_PATH = 'resources/lenet_mnist_model.bin'
-
 
 def model_train(model, train_loader, device, epochs, attack):
     model.train()
@@ -52,12 +49,12 @@ def main():
     # MNIST Test dataset and dataloader declaration
     kwargs = {'num_workers': 1, 'pin_memory': True} if torch.cuda.is_available() else {}
     train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(MNIST_PATH, train=True, download=True, transform=transforms.Compose([
+        datasets.MNIST('../data', train=True, download=True, transform=transforms.Compose([
             transforms.ToTensor()
         ])),
         batch_size=64, shuffle=True, **kwargs)
     test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(MNIST_PATH, train=False, transform=transforms.Compose([
+        datasets.MNIST('../data', train=False, transform=transforms.Compose([
             transforms.ToTensor()
         ])),
         batch_size=128, shuffle=True, **kwargs)
@@ -71,9 +68,9 @@ def main():
     # Train an MNIST model
     model_train(model, train_loader, device, 10, noop_attack)
 
-    # Evaluate the accuracy of the MNIST model on legitimate test examples
+    # Evaluate the accuracy of the MNIST model on benign examples
     accuracy = model_eval(model, test_loader, device, noop_attack)
-    print('Test accuracy on legitimate test examples: ' + str(accuracy))
+    print('Test accuracy on benign examples: ' + str(accuracy))
 
     # Evaluate the accuracy of the MNIST model on adversarial examples
     accuracy = model_eval(model, test_loader, device, fgsm_attack)
@@ -84,9 +81,9 @@ def main():
     model_train(model, train_loader, device, 10, fgsm_attack)
 
     # Evaluate the accuracy of the adversarialy trained MNIST model on
-    # legitimate test examples
+    # benign examples
     accuracy = model_eval(model, test_loader, device, noop_attack)
-    print('Test accuracy on legitimate test examples: ' + str(accuracy))
+    print('Test accuracy on benign examples: ' + str(accuracy))
 
     # Evaluate the accuracy of the adversarially trained MNIST model on
     # adversarial examples
