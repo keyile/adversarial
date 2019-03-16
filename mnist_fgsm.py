@@ -6,36 +6,35 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-from attacks import fgsm_attack
-from attacks import noop_attack
+from attacks import *
 from models import LeNet
 from torchvision import datasets, transforms
 
 
-def model_train(model, train_loader, device, epochs, attack):
+def model_train(model, train_loader, device, epochs, attack, **attack_params):
     model.train()
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
     for epoch in range(epochs):
-        for data, target in train_loader:
-            data, target = data.to(device), target.to(device)
-            data = attack(model, data, target)  # produce the perturbed data
+        for data, label in train_loader:
+            data, label = data.to(device), label.to(device)
+            data = attack(model, data, label, **attack_params)  # produce the perturbed data
             optimizer.zero_grad()
             output = model(data)
-            loss = F.nll_loss(output, target)
+            loss = F.nll_loss(output, label)
             loss.backward()
             optimizer.step()
 
 
-def model_eval(model, test_loader, device, attack):
+def model_eval(model, test_loader, device, attack, **attack_params):
     model.eval()
     correct = 0
-    for data, target in test_loader:
-        data, target = data.to(device), target.to(device)
-        data = attack(model, data, target)  # produce the perturbed data
+    for data, label in test_loader:
+        data, label = data.to(device), label.to(device)
+        data = attack(model, data, label, **attack_params)  # produce the perturbed data
         output = model(data)
         # get the index of the max log-probability
         pred = output.argmax(dim=1, keepdim=True)
-        correct += pred.eq(target.view_as(pred)).sum().item()
+        correct += pred.eq(label.view_as(pred)).sum().item()
 
     return 1. * correct / len(test_loader.dataset)
 
