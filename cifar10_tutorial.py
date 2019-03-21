@@ -47,7 +47,7 @@ def main():
     print('Accuracy of the network on the clean test images: %d %%' % (
         100 * accuracy))
 
-    accuracy = model_eval(net, testloader, criterion, attack_method=fgsm_attack, epsilon=0.3)
+    accuracy = model_eval(net, testloader, criterion, attack_method=illcm_attack)
     print('Accuracy of the network on the adversarial test images: %d %%' % (
         100 * accuracy))
 

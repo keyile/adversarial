@@ -4,8 +4,12 @@ The attack package contains adversarial attack methods inplements.
 
 import torch
 
+
 def noop_attack(model, data, label, criterion):
+    r"""The no-operation attack. Only used for comparing test.
+    """
     return data
+
 
 def fgsm_attack(model, data, label, criterion, epsilon=0.25):
     r"""The Fast Gradient Sign Method attack.
@@ -42,26 +46,8 @@ def fgsm_attack(model, data, label, criterion, epsilon=0.25):
     return perturbed_image
 
 
-def bim_attack(model, data, label, criterion, epsilon=0.25, nb_iter=10, alpha=0.1):
-    r"""The Basic Iterate Method attack, also names as I-FGSM.
-    """
-    eta = 0
-    data.requires_grad = False
-
-    for _ in range(nb_iter):
-        # Call FGSM Attack
-        perturbed_data = fgsm_attack(model, data + eta, label, criterion, alpha)
-
-        # Clip intermediate results
-        eta = perturbed_data - data
-        eta = torch.clamp(eta, -epsilon, epsilon)
-
-    # Return the perturbed image
-    return data + eta
-
-
 def onestep_attack(model, data, label, criterion, target=None, epsilon=0.25):
-    r"""The One-step target class methods
+    r"""The one-step target class methods.
     """
 
     # Set requires_grad attribute of tensor. Important for Attack
@@ -98,3 +84,41 @@ def onestep_attack(model, data, label, criterion, target=None, epsilon=0.25):
 
     # Return the perturbed image
     return perturbed_image
+
+
+def bim_attack(model, data, label, criterion, epsilon=0.25, nb_iter=10, alpha=0.1):
+    r"""The Basic Iterate Method attack, also names as I-FGSM.
+    """
+
+    eta = 0
+    data.requires_grad = False
+
+    for _ in range(nb_iter):
+        # Call FGSM Attack
+        perturbed_data = fgsm_attack(model, data + eta, label, criterion, alpha)
+
+        # Clip intermediate results
+        eta = perturbed_data - data
+        eta = torch.clamp(eta, -epsilon, epsilon)
+
+    # Return the perturbed image
+    return data + eta
+
+
+def illcm_attack(model, data, label, criterion, target=None, epsilon=0.25, nb_iter=10, alpha=0.1):
+    r"""The Iterative Least-Likely Class method, iterative version of one-step target attack.
+    """
+
+    eta = 0
+    data.requires_grad = False
+
+    for _ in range(nb_iter):
+        # Call one-step target attack
+        perturbed_data = onestep_attack(model, data + eta, label, criterion, target, alpha)
+
+        # Clip intermediate results
+        eta = perturbed_data - data
+        eta = torch.clamp(eta, -epsilon, epsilon)
+
+    # Return the perturbed image
+    return data + eta
