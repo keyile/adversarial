@@ -42,7 +42,7 @@ def fgsm_attack(model, data, label, criterion, epsilon=0.25):
     return perturbed_image
 
 
-def bim_attack(model, data, label, criterion, epsilon=0.1, nb_iter=3, alpha=0.1):
+def bim_attack(model, data, label, criterion, epsilon=0.25, nb_iter=10, alpha=0.1):
     r"""The Basic Iterate Method attack, also names as I-FGSM.
     """
     eta = 0
