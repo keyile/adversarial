@@ -3,12 +3,11 @@ The attack package contains adversarial attack methods inplements.
 """
 
 import torch
-import torch.nn.functional as F
 
-def noop_attack(model, data, label):
+def noop_attack(model, data, label, criterion):
     return data
 
-def fgsm_attack(model, data, label, epsilon=0.25):
+def fgsm_attack(model, data, label, criterion, epsilon=0.25):
     r"""The Fast Gradient Sign Method attack.
     """
 
@@ -19,7 +18,7 @@ def fgsm_attack(model, data, label, epsilon=0.25):
     output = model(data)
 
     # Calculate the loss
-    loss = F.nll_loss(output, label)
+    loss = criterion(output, label)
 
     # Calculate gradients of model in backward pass
     loss.backward()
@@ -43,7 +42,7 @@ def fgsm_attack(model, data, label, epsilon=0.25):
     return perturbed_image
 
 
-def bim_attack(model, data, label, epsilon=0.1, nb_iter=3, alpha=0.1):
+def bim_attack(model, data, label, criterion, epsilon=0.1, nb_iter=3, alpha=0.1):
     r"""The Basic Iterate Method attack, also names as I-FGSM.
     """
     eta = 0
@@ -51,7 +50,7 @@ def bim_attack(model, data, label, epsilon=0.1, nb_iter=3, alpha=0.1):
 
     for _ in range(nb_iter):
         # Call FGSM Attack
-        perturbed_data = fgsm_attack(model, data + eta, label, alpha)
+        perturbed_data = fgsm_attack(model, data + eta, label, criterion, alpha)
 
         # Clip intermediate results
         eta = perturbed_data - data
@@ -61,7 +60,7 @@ def bim_attack(model, data, label, epsilon=0.1, nb_iter=3, alpha=0.1):
     return data + eta
 
 
-def onestep_attack(model, data, label, target=None, epsilon=0.25):
+def onestep_attack(model, data, label, criterion, target=None, epsilon=0.25):
     r"""The One-step target class methods
     """
 
@@ -77,7 +76,7 @@ def onestep_attack(model, data, label, target=None, epsilon=0.25):
             target = output.argmin(dim=1)
 
     # Calculate the loss
-    loss = F.nll_loss(output, target)
+    loss = criterion(output, target)
 
     # Calculate gradients of model in backward pass
     loss.backward()
