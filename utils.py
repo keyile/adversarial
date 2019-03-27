@@ -3,7 +3,9 @@ The PyTorch routines.
 """
 
 def model_train(model, train_loader, criterion, optimizer, epochs=1, use_cuda=True, attack_method=None, **attack_params):
+    # set the model in training mode
     model.train()
+
     for epoch in range (epochs):
         for data, label in train_loader:
             if use_cuda:
@@ -20,15 +22,20 @@ def model_train(model, train_loader, criterion, optimizer, epochs=1, use_cuda=Tr
 
 
 def model_eval(model, test_loader, criterion, use_cuda=True, attack_method=None, **attack_params):
-    model.eval()
+
     # accuracy counter
     correct = 0
     for data, label in test_loader:
         if use_cuda:
             data, label = data.cuda(), label.cuda()
+
         # call the attack to produce adversarial data if possible
         if not attack_method is None:
+            model.train()
             data = attack_method(model, data, label, criterion, **attack_params)
+
+        # set the model in eval mode
+        model.eval()
         output = model(data)
         # get the index of the max log-probability
         pred = output.argmax(dim=1, keepdim=True)
