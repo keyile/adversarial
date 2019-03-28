@@ -43,11 +43,11 @@ def main():
     print('Neural network ready.')
 
     # evaluate the model performance
-    accuracy = model_eval(net, testloader, criterion)
+    accuracy, _ = model_eval(net, testloader, criterion)
     print('Accuracy of the network on the clean test images: %d %%' % (
         100 * accuracy))
 
-    accuracy = model_eval(net, testloader, criterion, attack_method=illcm_attack)
+    accuracy, _ = model_eval(net, testloader, criterion, attack_method=illcm_attack)
     print('Accuracy of the network on the adversarial test images: %d %%' % (
         100 * accuracy))
 

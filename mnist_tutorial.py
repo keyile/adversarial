@@ -21,8 +21,8 @@ def main():
                         help='takes the adversarial training process')
     parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                         help='input batch size for training (default: 64)')
-    parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
-                        help='input batch size for testing (default: 1000)')
+    parser.add_argument('--test-batch-size', type=int, default=512, metavar='N',
+                        help='input batch size for testing (default: 512)')
     args = parser.parse_args()
 
     # Define what device we are using
@@ -56,11 +56,11 @@ def main():
 
     print('Evaluating the neural network')
     # Evaluate the accuracy of the MNIST model on clean examples
-    accuracy = model_eval(model, test_loader, F.nll_loss)
+    accuracy, _ = model_eval(model, test_loader, F.nll_loss)
     print('Test accuracy on clean examples: ' + str(accuracy))
 
     # Evaluate the accuracy of the MNIST model on adversarial examples
-    accuracy = model_eval(model, test_loader, F.nll_loss, attack_method=fgsm_attack)
+    accuracy, _ = model_eval(model, test_loader, F.nll_loss, attack_method=fgsm_attack)
     print('Test accuracy on adversarial examples: ' + str(accuracy))
 
     if args.adversarial_training:
@@ -70,12 +70,12 @@ def main():
 
         # Evaluate the accuracy of the adversarially trained MNIST model on
         # clean examples
-        accuracy = model_eval(model, test_loader, F.nll_loss)
+        accuracy, _ = model_eval(model, test_loader, F.nll_loss)
         print('Test accuracy on clean examples: ' + str(accuracy))
 
         # Evaluate the accuracy of the adversarially trained MNIST model on
         # adversarial examples
-        accuracy_adv = model_eval(model, test_loader, F.nll_loss, attack_method=fgsm_attack)
+        accuracy_adv, _ = model_eval(model, test_loader, F.nll_loss, attack_method=fgsm_attack)
         print('Test accuracy on adversarial examples: ' + str(accuracy_adv))
 
 
